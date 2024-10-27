@@ -1,4 +1,4 @@
-import { User, Cart } from "../models/index.js";
+import { User } from "../models/index.js";
 import sequelize from "../connection/connection.js";
 
 class UserService {
@@ -78,28 +78,37 @@ class UserService {
   }
 
   async getBestCustomer() {
+    const transaction = await sequelize.transaction();
     try {
-      const bestCustomer = await Order.findAll({
-        attributes: [
-          'UserId',
-          [sequelize.fn('COUNT', sequelize.col('Order.id')), 'orderCount'],
-          [sequelize.fn('SUM', sequelize.col('totalprice')), 'totalSpent']
-        ],
-        group: ['UserId'],
-        order: [
-          [sequelize.fn('SUM', sequelize.col('totalprice')), 'DESC'],
-          [sequelize.fn('COUNT', sequelize.col('Order.id')), 'DESC']
-        ],
-        limit: 1,
-        include: [{ model: User, attributes: ['id', 'name', 'lastname', 'mail'] }]
-      });
+      const [results, metadata] = await sequelize.query(`
+        SELECT TOP 1
+          UserId, 
+          SUM(totalprice) AS totalSpent
+        FROM Orders
+        WHERE status != 'Cancelado'
+        GROUP BY UserId
+        ORDER BY totalSpent DESC
+      `, { transaction });
 
-      if (bestCustomer.length === 0) {
+      console.log("Query Results:", results); // Agregar para depuración
+
+      if (results.length === 0) {
         throw new Error("No customers found");
       }
 
-      return bestCustomer[0];
+      const bestCustomer = results[0];
+      const user = await User.findByPk(bestCustomer.UserId, {
+        attributes: ['id', 'name', 'mail'], // Asegúrate de que estos nombres de columna coincidan con tu base de datos
+        transaction
+      });
+
+      await transaction.commit();
+      return {
+        ...user.toJSON(),
+        totalSpent: bestCustomer.totalSpent
+      };
     } catch (error) {
+      await transaction.rollback();
       console.error("Error fetching best customer:", error);
       throw error;
     }
