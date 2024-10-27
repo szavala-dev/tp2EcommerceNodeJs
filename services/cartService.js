@@ -1,10 +1,10 @@
-import { Cart, CartItem, Product } from "../models/index.js";
+import { Cart, CartItem, Product, Order } from "../models/index.js";
 
 class CartService {
   // Crear un nuevo carrito
-  async createCart(userId, deliveryAddress, email) {
+  async createCart(userId, deliveryAddress, email, city, state) {
     try {
-      const cart = await Cart.create({ UserId: userId, delivery_address: deliveryAddress, email });
+      const cart = await Cart.create({ UserId: userId, delivery_address: deliveryAddress, email, city, state });
       return cart;
     } catch (error) {
       console.error("Error creating cart:", error);
@@ -57,58 +57,38 @@ class CartService {
     }
   }
 
-  // Generar una orden de compra
+  // Generar una orden desde el carrito
   async generateOrder(userId) {
-    const transaction = await connection.transaction();
     try {
-      const cart = await Cart.findOne({
-        where: { UserId: userId },
-        include: [{ model: CartItem, include: [Product] }],
-        transaction,
-      });
-
+      const cart = await this.getCartByUserId(userId);
       if (!cart) {
         throw new Error("Cart not found");
       }
 
-      const orderItems = cart.CartItems.map(item => ({
-        ProductId: item.ProductId,
-        quantity: item.quantity,
-        price: item.Product.price,
-      }));
-
-      const totalprice = orderItems.reduce((total, item) => total + item.price * item.quantity, 0);
-
-      const order = await Order.create({
+      const orderData = {
         UserId: userId,
-        products: JSON.stringify(orderItems),
+        products: JSON.stringify(cart.CartItems.map(item => ({
+          ProductId: item.ProductId,
+          quantity: item.quantity,
+          price: item.Product.price
+        }))),
         delivery_address: cart.delivery_address,
         city: cart.city,
         state: cart.state,
-        shipping: 0, // se calculara la orden de envio a futuro
-        totalprice,
+        shipping: 10.0, // Ejemplo de costo de envío
+        totalprice: cart.CartItems.reduce((total, item) => total + item.quantity * item.Product.price, 0) + 10.0,
         status: 'PagoPendiente',
-      }, { transaction });
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
 
-      for (const item of cart.CartItems) {
-        const product = await Product.findByPk(item.ProductId, { transaction });
-        if (product.stock < item.quantity) {
-          throw new Error(`Not enough stock for product ${product.name}`);
-        }
-        product.stock -= item.quantity;
-        await product.save({ transaction });
-      }
-
-      await CartItem.destroy({ where: { CartId: cart.id }, transaction });
-      await transaction.commit();
+      const order = await Order.create(orderData);
       return order;
     } catch (error) {
-      await transaction.rollback();
       console.error("Error generating order:", error);
       throw error;
     }
   }
-
 }
 
 export default CartService;

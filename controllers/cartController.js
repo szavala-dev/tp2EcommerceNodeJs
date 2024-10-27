@@ -6,8 +6,8 @@ class CartController {
   // Crear un nuevo carrito
   createCart = async (req, res) => {
     try {
-      const { userId, deliveryAddress, email } = req.body;
-      const cart = await this.cartService.createCart(userId, deliveryAddress, email);
+      const { userId, deliveryAddress, email, city, state } = req.body;
+      const cart = await this.cartService.createCart(userId, deliveryAddress, email, city, state);
       res.status(200).send({ success: true, message: cart });
     } catch (error) {
       res.status(400).send({
@@ -69,8 +69,6 @@ class CartController {
       });
     }
   };
-
-
 }
 
 export default CartController;

@@ -3,7 +3,20 @@ import RoleService from "../services/roleService.js";
 class RoleController {
   roleService = new RoleService();
 
-  // Get all roles
+  // Crear un nuevo rol
+  createRole = async (req, res) => {
+    try {
+      const role = await this.roleService.createRoleService(req.body);
+      res.status(200).send({ success: true, message: role });
+    } catch (error) {
+      res.status(400).send({
+        success: false,
+        message: error.message,
+      });
+    }
+  };
+
+  // Obtener todos los roles
   getAllRoles = async (req, res) => {
     try {
       const roles = await this.roleService.getAllRolesService();
@@ -16,7 +29,7 @@ class RoleController {
     }
   };
 
-  // Get a role by ID
+  // Obtener un rol por ID
   getRoleById = async (req, res) => {
     try {
       const role = await this.roleService.getRoleByIdService(req.params.id);
@@ -29,37 +42,10 @@ class RoleController {
     }
   };
 
-  // Create a new role
-  createRole = async (req, res) => {
-    try {
-      const { name } = req.body;
-      if (!name) {
-        return res.status(400).send({
-          success: false,
-          message: "Role name is required",
-        });
-      }
-      const role = await this.roleService.createRoleService({ name });
-      res.status(200).send({ success: true, message: role });
-    } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
-    }
-  };
-
-  // Update a role by ID
+  // Actualizar un rol por ID
   updateRole = async (req, res) => {
     try {
-      const { name } = req.body;
-      if (!name) {
-        return res.status(400).send({
-          success: false,
-          message: "Role name is required",
-        });
-      }
-      const role = await this.roleService.updateRoleService(req.params.id, { name });
+      const role = await this.roleService.updateRoleService(req.params.id, req.body);
       res.status(200).send({ success: true, message: role });
     } catch (error) {
       res.status(400).send({
@@ -69,7 +55,7 @@ class RoleController {
     }
   };
 
-  // Delete a role by ID
+  // Eliminar un rol por ID
   deleteRole = async (req, res) => {
     try {
       const role = await this.roleService.deleteRoleService(req.params.id);

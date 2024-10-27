@@ -20,6 +20,14 @@ Cart.init(
         isEmail: true,
       },
     },
+    city: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    state: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
   },
   {
     sequelize: connection,
