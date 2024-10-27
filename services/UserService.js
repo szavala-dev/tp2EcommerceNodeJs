@@ -1,4 +1,4 @@
-import { User, Cart, Role } from "../models/index.js";
+import { User, Cart } from "../models/index.js";
 import sequelize from "../connection/connection.js";
 
 class UserService {
@@ -37,6 +37,8 @@ class UserService {
         UserId: user.id,
         delivery_address: userData.address,
         email: userData.mail,
+        city: userData.city,
+        state: userData.state
       }, { transaction });
       await transaction.commit();
       return user;

@@ -1,4 +1,5 @@
 import { Cart, CartItem, Product, Order } from "../models/index.js";
+import sequelize from "../connection/connection.js"; // Importar la instancia de Sequelize
 
 class CartService {
   // Crear un nuevo carrito
@@ -59,6 +60,7 @@ class CartService {
 
   // Generar una orden desde el carrito
   async generateOrder(userId) {
+    const transaction = await sequelize.transaction();
     try {
       const cart = await this.getCartByUserId(userId);
       if (!cart) {
@@ -82,9 +84,24 @@ class CartService {
         updatedAt: new Date()
       };
 
-      const order = await Order.create(orderData);
+      const order = await Order.create(orderData, { transaction });
+
+      // Reducir el stock de los productos
+      for (const item of cart.CartItems) {
+        const product = await Product.findByPk(item.ProductId, { transaction });
+        if (product) {
+          product.stock -= item.quantity;
+          await product.save({ transaction });
+        }
+      }
+
+      // Eliminar los ítems del carrito
+      await CartItem.destroy({ where: { CartId: cart.id }, transaction });
+
+      await transaction.commit();
       return order;
     } catch (error) {
+      await transaction.rollback();
       console.error("Error generating order:", error);
       throw error;
     }

@@ -1,4 +1,5 @@
-import { Order, User } from "../models/index.js";
+import { Order, Product } from "../models/index.js"; // Importar la clase Product
+import sequelize from "../connection/connection.js"; // Importar la instancia de Sequelize
 
 class OrderService {
   // Crear una nueva orden
@@ -66,7 +67,7 @@ class OrderService {
       throw error;
     }
   }
-  
+
   // Obtener órdenes pendientes
   async getPendingOrders() {
     try {
@@ -94,7 +95,8 @@ class OrderService {
       throw error;
     }
   }
-// Obtener órdenes preparadas
+
+  // Obtener órdenes preparadas
   async getPreparedOrders() {
     try {
       const confirmedOrders = await Order.findAll({
@@ -107,19 +109,20 @@ class OrderService {
       throw error;
     }
   }
-  // Obtener órdene enviadas
+
+  // Obtener órdenes enviadas
   async getSentOrders() {
     try {
-      const confirmedOrders = await Order.findAll({
+      const sentOrders = await Order.findAll({
         where: { status: 'Enviado' }
       });
-      const count = confirmedOrders.length;
-      return { count, orders: confirmedOrders };
+      const count = sentOrders.length;
+      return { count, orders: sentOrders };
     } catch (error) {
-      console.error("Error fetching confirmed orders:", error);
+      console.error("Error fetching sent orders:", error);
       throw error;
     }
-  } 
+  }
 
   // Cambiar el estado de la orden a Confirmado
   async confirmOrder(id) {
@@ -165,45 +168,34 @@ class OrderService {
       throw error;
     }
   }
-  
-  // Obtener órdenes enviadas
-  async getSentOrders() {
-    try {
-      const sentOrders = await Order.findAll({
-        where: { status: 'Enviado' }
-      });
-      const count = sentOrders.length;
-      return { count, orders: sentOrders };
-    } catch (error) {
-      console.error("Error fetching sent orders:", error);
-      throw error;
-    }
-  }
 
+  // Cancelar una orden y devolver el stock
   async cancelOrder(id) {
+    const transaction = await sequelize.transaction();
     try {
-      const order = await Order.findByPk(id);
+      const order = await Order.findByPk(id, { transaction });
       if (!order) {
         throw new Error("Order not found");
       }
 
       const products = JSON.parse(order.products);
       for (const item of products) {
-        const product = await Product.findByPk(item.ProductId);
+        const product = await Product.findByPk(item.ProductId, { transaction });
         if (product) {
           product.stock += item.quantity;
-          await product.save();
+          await product.save({ transaction });
         }
       }
 
-      await order.update({ status: 'Cancelado' });
+      await order.update({ status: 'Cancelado' }, { transaction });
+      await transaction.commit();
       return order;
     } catch (error) {
+      await transaction.rollback();
       console.error("Error canceling order:", error);
       throw error;
     }
   }
-
 }
 
 export default OrderService;
