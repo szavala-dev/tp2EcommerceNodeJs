@@ -1,4 +1,5 @@
 import UserService from "../services/userService.js";
+import sequelize from "../connection/connection.js"; // Asegúrate de importar la instancia de Sequelize
 
 class UserControllers {
   userService = new UserService();
@@ -29,10 +30,10 @@ class UserControllers {
 
   createUser = async (req, res) => {
     try {
-      const { name, lastname, dni, mail, pass, dateOfBirth, RoleId, address, city, state } = req.body;
-      const user = await this.userService.createUserService({ name, lastname, dni, mail, pass, dateOfBirth, RoleId, address, city, state });
-      res.status(200).send({ success: true, message: user });
+      const user = await this.userService.createUser(req.body);
+      res.status(200).send({ success: true, user });
     } catch (error) {
+      console.error("Error creating user and cart:", error);
       res.status(400).send({
         success: false,
         message: error.message,

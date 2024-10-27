@@ -1,8 +1,8 @@
-import { User } from "../models/index.js";
+import { User, Cart} from "../models/index.js";
 import sequelize from "../connection/connection.js";
 
 class UserService {
-  getAllUsersService = async () => {
+  getAllUsers = async () => {
     try {
       const data = await User.findAll({
         attributes: ["name"],
@@ -14,7 +14,7 @@ class UserService {
     }
   };
 
-  getUserByIdService = async (id) => {
+  getUserById = async (id) => {
     try {
       const user = await User.findByPk(id, {
         attributes: ['id', 'name', 'lastname', 'mail', 'dni', 'dateOfBirth', 'address', 'city', 'state', 'RoleId']
@@ -29,27 +29,43 @@ class UserService {
     }
   };
 
-  async createUserService(userData) {
+  createUser = async (userData) => {
+    const { name, lastname, mail, dni, pass, dateOfBirth, address, city, state, RoleId } = userData;
     const transaction = await sequelize.transaction();
     try {
-      const user = await User.create(userData, { transaction });
+      // Crear el usuario
+      const user = await User.create({
+        name,
+        lastname,
+        mail,
+        dni,
+        pass,
+        dateOfBirth,
+        address,
+        city,
+        state,
+        RoleId
+      }, { transaction });
+
+      // Crear el carrito para el usuario
       await Cart.create({
         UserId: user.id,
-        delivery_address: userData.address,
-        email: userData.mail,
-        city: userData.city,
-        state: userData.state
+        delivery_address: user.address,
+        email: user.mail,
+        city,
+        state
       }, { transaction });
+
       await transaction.commit();
       return user;
     } catch (error) {
       await transaction.rollback();
-      console.error("Error creating user:", error);
+      console.error("Error creating user and cart:", error);
       throw error;
     }
   };
 
-  async updateUserService(id, userData) {
+  updateUser = async (id, userData) => {
     try {
       const user = await User.findByPk(id);
       if (!user) {
@@ -61,23 +77,9 @@ class UserService {
       console.error("Error updating user:", error);
       throw error;
     }
-  }
+  };
 
-  async deleteUserService(id) {
-    try {
-      const user = await User.findByPk(id);
-      if (!user) {
-        throw new Error("User not found");
-      }
-      await user.destroy();
-      return { success: true, message: "User deleted successfully" };
-    } catch (error) {
-      console.error("Error deleting user:", error);
-      throw error;
-    }
-  }
-
-  async getBestCustomer() {
+  getBestCustomer = async () => {
     const transaction = await sequelize.transaction();
     try {
       const [results, metadata] = await sequelize.query(`
@@ -112,7 +114,7 @@ class UserService {
       console.error("Error fetching best customer:", error);
       throw error;
     }
-  }
+  };
 }
 
 export default UserService;
