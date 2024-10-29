@@ -40,7 +40,7 @@ app.use((err, req, res, next) => {
 // Sincronizar los modelos con la base de datos
 await connection.sync({ force: false });
 
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 8001;
 
 app.listen(PORT, () => {
   logger.info(`🚀 Server running on http://localhost:${PORT}`);
