@@ -9,8 +9,8 @@ class UserService {
       if (!user) {
         throw new Error('User not found');
       }
-      const isMatch = await bcrypt.compare(pass, user.pass);
-      if (!isMatch) {
+      console.log("User found:", user);
+      if (user.pass !== pass) {
         throw new Error('Invalid credentials');
       }
       return user;
@@ -19,6 +19,7 @@ class UserService {
       throw error;
     }
   };
+
 
   getAllUsers = async () => {
     try {
@@ -57,14 +58,13 @@ class UserService {
         lastname,
         mail,
         dni,
-        pass,
+        pass, // Almacenar la contraseña en texto plano
         dateOfBirth,
         address,
         city,
         state,
         RoleId
       }, { transaction });
-
       // Crear el carrito para el usuario
       await Cart.create({
         UserId: user.id,
@@ -73,7 +73,6 @@ class UserService {
         city,
         state
       }, { transaction });
-
       await transaction.commit();
       return user;
     } catch (error) {

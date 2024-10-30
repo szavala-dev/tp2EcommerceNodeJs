@@ -1,6 +1,4 @@
 import UserService from "../services/userService.js";
-import sequelize from "../connection/connection.js"; // Asegúrate de importar la instancia de Sequelize
-import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
 class UserControllers {
@@ -9,16 +7,23 @@ class UserControllers {
   login = async (req, res) => {
     try {
       const { mail, pass } = req.body;
+      console.log("Mail:", mail);
+      console.log("Password:", pass);
+      if (!mail || !pass) {
+        return res.status(400).send({ success: false, message: 'Mail and password are required' });
+      }
       const user = await this.userService.login(mail, pass);
       if (!user) {
         return res.status(401).send({ success: false, message: 'Invalid credentials' });
       }
       const token = jwt.sign({ id: user.id, mail: user.mail }, 'your_jwt_secret', { expiresIn: '1h' });
-      res.status(200).send({ success: true, token });
+      res.status(200).send({ success: true, token, user });
     } catch (error) {
       res.status(400).send({ success: false, message: error.message });
     }
   };
+
+
 
   getAllUsers = async (req, res) => {
     try {

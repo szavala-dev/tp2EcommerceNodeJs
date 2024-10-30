@@ -7,7 +7,7 @@ import logger from './middlewares/logger.js'; // Importar el logger
 const app = express();
 
 app.use(cors()); // Permitir solicitudes CORS
-app.use(express.json());
+app.use(express.json()); // Middleware para parsear JSON
 app.use(express.urlencoded({ extended: true }));
 
 // Middleware para usar logger en todas las solicitudes entrantes
@@ -45,3 +45,5 @@ const PORT = process.env.PORT || 8001;
 app.listen(PORT, () => {
   logger.info(`🚀 Server running on http://localhost:${PORT}`);
 });
+// Exportar la aplicación para ser utilizada en los tests
+export default app;

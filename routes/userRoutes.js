@@ -4,6 +4,9 @@ import UserControllers from "../controllers/userControllers.js";
 const userControllers = new UserControllers();
 
 const userRoutes = Router();
+// Definir la ruta para el login antes de la ruta con parámetro :id
+userRoutes.post("/login", userControllers.login);
+
 // Definir la ruta para obtener el mejor comprador antes de la ruta con parámetro :id
 userRoutes.get("/best-customer", userControllers.getBestCustomer);
 
@@ -14,6 +17,5 @@ userRoutes.post("/", userControllers.createUser);
 userRoutes.put("/:id", userControllers.updateUser);
 userRoutes.delete("/:id", userControllers.deleteUser);
 
-userRoutes.post("/login", userControllers.login);
 
 export default userRoutes;
