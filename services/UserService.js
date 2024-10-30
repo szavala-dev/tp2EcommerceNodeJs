@@ -2,6 +2,24 @@ import { User, Cart} from "../models/index.js";
 import sequelize from "../connection/connection.js";
 
 class UserService {
+
+  login = async (mail, pass) => {
+    try {
+      const user = await User.findOne({ where: { mail } });
+      if (!user) {
+        throw new Error('User not found');
+      }
+      const isMatch = await bcrypt.compare(pass, user.pass);
+      if (!isMatch) {
+        throw new Error('Invalid credentials');
+      }
+      return user;
+    } catch (error) {
+      console.error("Error logging in:", error);
+      throw error;
+    }
+  };
+
   getAllUsers = async () => {
     try {
       const data = await User.findAll({
