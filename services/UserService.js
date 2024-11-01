@@ -1,3 +1,4 @@
+import bcrypt from 'bcrypt';
 import { User, Cart} from "../models/index.js";
 import sequelize from "../connection/connection.js";
 
@@ -7,10 +8,11 @@ class UserService {
     try {
       const user = await User.findOne({ where: { mail } });
       if (!user) {
-        throw new Error('User not found');
+        throw new Error('Invalid credentials');
       }
       console.log("User found:", user);
-      if (user.pass !== pass) {
+      const isMatch = await bcrypt.compare(pass, user.pass);
+      if (!isMatch) {
         throw new Error('Invalid credentials');
       }
       return user;
@@ -19,7 +21,6 @@ class UserService {
       throw error;
     }
   };
-
 
   getAllUsers = async () => {
     try {
@@ -50,6 +51,7 @@ class UserService {
 
   createUser = async (userData) => {
     const { name, lastname, mail, dni, pass, dateOfBirth, address, city, state, RoleId } = userData;
+    const hashedPassword = await bcrypt.hash(pass, 10); // Hashear la contraseña
     const transaction = await sequelize.transaction();
     try {
       // Crear el usuario
@@ -58,7 +60,7 @@ class UserService {
         lastname,
         mail,
         dni,
-        pass, // Almacenar la contraseña en texto plano
+        pass: hashedPassword, // Almacenar la contraseña en texto plano
         dateOfBirth,
         address,
         city,
@@ -70,8 +72,8 @@ class UserService {
         UserId: user.id,
         delivery_address: user.address,
         email: user.mail,
-        city,
-        state
+        city: user.city,
+        state: user.state
       }, { transaction });
       await transaction.commit();
       return user;
@@ -96,6 +98,21 @@ class UserService {
     }
   };
 
+  deleteUser = async (id) => {
+    try {
+      const user = await User.findByPk(id);
+      if (!user) {
+        throw new Error('User not found');
+      }
+      await user.destroy();
+      return { message: 'User deleted successfully' };
+    } catch (error) {
+      console.error("Error deleting user:", error);
+      throw error;
+    }
+  };
+  
+  
   getBestCustomer = async () => {
     const transaction = await sequelize.transaction();
     try {

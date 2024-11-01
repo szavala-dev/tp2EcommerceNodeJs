@@ -1,4 +1,4 @@
-import UserService from "../services/userService.js";
+import UserService from '../services/UserService.js';
 import jwt from 'jsonwebtoken';
 
 class UserControllers {
@@ -76,13 +76,11 @@ class UserControllers {
 
   deleteUser = async (req, res) => {
     try {
-      const user = await this.userService.deleteUserService(req.params.id);
-      res.status(200).send(user);
+      const { id } = req.params;
+      const result = await this.userService.deleteUser(id);
+      res.status(200).send({ success: true, message: result.message });
     } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).send({ success: false, message: error.message });
     }
   };
 

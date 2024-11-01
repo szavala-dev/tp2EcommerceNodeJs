@@ -6,7 +6,11 @@ import logger from './middlewares/logger.js'; // Importar el logger
 
 const app = express();
 
-app.use(cors()); // Permitir solicitudes CORS
+app.use(cors({
+  origin: 'http://localhost:8000', // Dominio que está permitido hacer la solicitud
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], // Métodos permitidos
+  allowedHeaders: ['Content-Type', 'Authorization'] // Encabezados permitidos
+}));
 app.use(express.json()); // Middleware para parsear JSON
 app.use(express.urlencoded({ extended: true }));
 
