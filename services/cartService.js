@@ -45,8 +45,6 @@ class CartService {
           CartId: cartId,
           ProductId: productId,
           quantity,
-          ProductName: product.name,
-          ProductImage: product.imageUrl,
         }, { transaction });
       }
 

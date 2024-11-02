@@ -18,14 +18,6 @@ CartItem.init(
       allowNull: false,
       defaultValue: 1,
     },
-    ProductName: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    ProductImage: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
   },
   {
     sequelize: connection,
