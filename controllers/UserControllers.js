@@ -7,21 +7,33 @@ class UserControllers {
   login = async (req, res) => {
     try {
       const { mail, pass } = req.body;
-      console.log("Mail:", mail);
-      console.log("Password:", pass);
       if (!mail || !pass) {
         return res.status(400).send({ success: false, message: 'Mail and password are required' });
       }
-      const { user, token } = await this.userService.login(mail, pass);
-      if (!user) {
-        return res.status(401).send({ success: false, message: 'Invalid credentials' });
-      }
-      res.status(200).send({ success: true, token, user });
+      const { token } = await this.userService.login(mail, pass);
+      res.status(200).send({ success: true, token });
     } catch (error) {
-      res.status(400).send({ success: false, message: error.message });
+      res.status(401).send({ success: false, message: error.message });
     }
   };
-  
+
+  getUserByToken = async (req, res) => {
+    try {
+      const token = req.headers.authorization?.split(' ')[1];
+      if (!token) {
+        return res.status(400).send({ success: false, message: 'Token is required' });
+      }
+      const decoded = jwt.verify(token, 'your_jwt_secret');
+      const user = await this.userService.getUserById(decoded.id);
+      if (!user) {
+        return res.status(404).send({ success: false, message: 'User not found' });
+      }
+      res.status(200).send({ success: true, user });
+    } catch (error) {
+      res.status(401).send({ success: false, message: error.message });
+    }
+  };
+
   getAllUsers = async (req, res) => {
     try {
       const users = await this.userService.getAllUsersService();

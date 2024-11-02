@@ -18,7 +18,7 @@ class UserService {
       }
       // Crear el token JWT
       const token = jwt.sign({ id: user.id, mail: user.mail }, 'your_jwt_secret', { expiresIn: '1h' });
-      return { user, token };
+      return { token };
     } catch (error) {
       console.error("Error logging in:", error);
       throw error;

@@ -7,6 +7,8 @@ const userRoutes = Router();
 // Definir la ruta para el login antes de la ruta con parámetro :id
 userRoutes.post("/login", userControllers.login);
 
+userRoutes.get("/loginToken", userControllers.getUserByToken);
+
 // Definir la ruta para obtener el mejor comprador antes de la ruta con parámetro :id
 userRoutes.get("/best-customer", userControllers.getBestCustomer);
 
