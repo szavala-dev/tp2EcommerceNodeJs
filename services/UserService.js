@@ -1,3 +1,4 @@
+import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { User, Cart} from "../models/index.js";
 import sequelize from "../connection/connection.js";
@@ -15,7 +16,9 @@ class UserService {
       if (!isMatch) {
         throw new Error('Invalid credentials');
       }
-      return user;
+      // Crear el token JWT
+      const token = jwt.sign({ id: user.id, mail: user.mail }, 'your_jwt_secret', { expiresIn: '1h' });
+      return { user, token };
     } catch (error) {
       console.error("Error logging in:", error);
       throw error;

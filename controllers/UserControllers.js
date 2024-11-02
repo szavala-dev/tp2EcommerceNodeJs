@@ -12,19 +12,16 @@ class UserControllers {
       if (!mail || !pass) {
         return res.status(400).send({ success: false, message: 'Mail and password are required' });
       }
-      const user = await this.userService.login(mail, pass);
+      const { user, token } = await this.userService.login(mail, pass);
       if (!user) {
         return res.status(401).send({ success: false, message: 'Invalid credentials' });
       }
-      const token = jwt.sign({ id: user.id, mail: user.mail }, 'your_jwt_secret', { expiresIn: '1h' });
       res.status(200).send({ success: true, token, user });
     } catch (error) {
       res.status(400).send({ success: false, message: error.message });
     }
   };
-
-
-
+  
   getAllUsers = async (req, res) => {
     try {
       const users = await this.userService.getAllUsersService();
