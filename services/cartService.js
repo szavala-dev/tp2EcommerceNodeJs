@@ -29,16 +29,31 @@ class CartService {
 
   // Agregar un producto al carrito
   async addProductToCart(cartId, productId, quantity) {
+    const transaction = await sequelize.transaction();
     try {
+      const product = await Product.findByPk(productId);
+      if (!product) {
+        throw new Error("Product not found");
+      }
+
       const cartItem = await CartItem.findOne({ where: { CartId: cartId, ProductId: productId } });
       if (cartItem) {
         cartItem.quantity += quantity;
-        await cartItem.save();
+        await cartItem.save({ transaction });
       } else {
-        await CartItem.create({ CartId: cartId, ProductId: productId, quantity });
+        await CartItem.create({
+          CartId: cartId,
+          ProductId: productId,
+          quantity,
+          ProductName: product.name,
+          ProductImage: product.imageUrl,
+        }, { transaction });
       }
+
+      await transaction.commit();
       return await this.getCartByUserId(cartId);
     } catch (error) {
+      await transaction.rollback();
       console.error("Error adding product to cart:", error);
       throw error;
     }
