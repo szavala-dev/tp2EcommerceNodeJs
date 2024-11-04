@@ -13,6 +13,19 @@ class OrderService {
     }
   }
 
+    // Obtener órdenes por ID de usuario
+  async getOrdersByUserId(userId) {
+    try {
+      const orders = await Order.findAll({
+        where: { UserId: userId }
+      });
+      return orders;
+    } catch (error) {
+      console.error("Error fetching orders by user ID:", error);
+      throw error;
+    }
+  }
+
   // Obtener todas las órdenes
   async getAllOrders() {
     try {

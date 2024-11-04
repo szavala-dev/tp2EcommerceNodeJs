@@ -1,4 +1,4 @@
-import OrderService from "../services/orderService.js";
+import OrderService from "../services/OrderService.js";
 
 class OrderController {
   orderService = new OrderService();
@@ -21,6 +21,19 @@ class OrderController {
     try {
       const orders = await this.orderService.getAllOrders();
       res.status(200).send({ success: true, message: orders });
+    } catch (error) {
+      res.status(400).send({
+        success: false,
+        message: error.message,
+      });
+    }
+  };
+
+  // Obtener órdenes por ID de usuario
+  getOrderByUserId = async (req, res) => {
+    try {
+      const orders = await this.orderService.getOrdersByUserId(req.params.id);
+      res.status(200).send({ success: true, orders });
     } catch (error) {
       res.status(400).send({
         success: false,

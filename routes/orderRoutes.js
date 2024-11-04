@@ -7,6 +7,8 @@ const orderRoutes = Router();
 
 orderRoutes.get("/", orderController.getAllOrders);
 orderRoutes.get("/:id", orderController.getOrderById);
+// Obtenercarrito por usuario
+orderRoutes.get("/user/:id", orderController.getOrderByUserId);
 orderRoutes.post("/", orderController.createOrder);
 orderRoutes.put("/:id", orderController.updateOrder);
 orderRoutes.delete("/:id", orderController.deleteOrder);
