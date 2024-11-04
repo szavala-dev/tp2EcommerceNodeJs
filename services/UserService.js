@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { User, Cart} from "../models/index.js";
 import sequelize from "../connection/connection.js";
+import Role from '../models/Role.js'; 
 
 class UserService {
 
