@@ -94,6 +94,10 @@ class UserService {
       if (!user) {
         throw new Error("User not found");
       }
+      // Verificar si la contraseña está presente en los datos de actualización
+      if (userData.pass) {
+        userData.pass = await bcrypt.hash(userData.pass, 10); // Hashear la nueva contraseña
+      }
       await user.update(userData);
       return user;
     } catch (error) {
