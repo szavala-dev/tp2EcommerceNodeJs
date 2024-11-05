@@ -28,13 +28,11 @@ class UserService {
 
   getAllUsers = async () => {
     try {
-      const data = await User.findAll({
-        attributes: ["name"],
-        include: Role,
-      });
-      return data;
+      const users = await User.findAll();
+      return users;
     } catch (error) {
-      throw error;
+      logger.error(`Failed to fetch users: ${error.message}`);
+      throw new Error("Failed to fetch users");
     }
   };
 
