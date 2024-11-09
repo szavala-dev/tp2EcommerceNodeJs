@@ -2,17 +2,19 @@ import express from 'express';
 import cors from 'cors';
 import routes from './routes/routes.js';
 import connection from './connection/connection.js';
-import logger from './middlewares/logger.js'; // Importar el logger
+import logger from './middlewares/logger.js';
+import cookieParser from 'cookie-parser'; // Importar cookie-parser
 
 const app = express();
 
 app.use(cors({
-  origin: 'http://localhost:8000', // Dominio que está permitido hacer la solicitud
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'], // Métodos permitidos
-  allowedHeaders: ['Content-Type', 'Authorization'] // Encabezados permitidos
+  origin: 'http://localhost:8000',
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
-app.use(express.json()); // Middleware para parsear JSON
+app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser()); // Usar cookie-parser
 
 // Middleware para usar logger en todas las solicitudes entrantes
 app.use((req, res, next) => {
@@ -44,10 +46,10 @@ app.use((err, req, res, next) => {
 // Sincronizar los modelos con la base de datos
 await connection.sync({ force: false });
 
-const PORT = process.env.PORT || 8001;
+const PORT = process.env.PORT;
 
 app.listen(PORT, () => {
-  logger.info(`🚀 Server running on http://localhost:${PORT}`);
+  console.log(`🚀 Server running on http://localhost:${PORT}`);
 });
-// Exportar la aplicación para ser utilizada en los tests
+
 export default app;
