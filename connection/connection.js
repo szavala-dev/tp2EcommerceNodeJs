@@ -1,14 +1,17 @@
 import { Sequelize } from "sequelize";
+import dotenv from 'dotenv';
 
-const connection = new Sequelize("E_commerce", "sa", "1029384756", {
-  host: "PCEMA\\SQLEXPRESS",
-  dialect: "mssql",
-  port: 1433, // Puerto predeterminado para SQL Server
-  dialectOptions: {
-    options: {
-      encrypt: false, // Deshabilitar la conexión segura
-    },
-  },
+// Cargar las variables de entorno desde el archivo .env
+dotenv.config();
+
+const connection = new Sequelize(
+  process.env.DB_NAME,
+  process.env.DB_USER,
+  process.env.DB_PASSWORD,
+  {
+  host: process.env.DB_HOST,
+  dialect: process.env.DB_DIALECT,
+  port: process.env.DB_PORT, // Puerto predeterminado para SQL Server
 });
 
 (async () => {

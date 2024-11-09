@@ -2,7 +2,6 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { User, Cart} from "../models/index.js";
 import sequelize from "../connection/connection.js";
-import Role from '../models/Role.js'; 
 
 class UserService {
 
@@ -18,10 +17,26 @@ class UserService {
         throw new Error('Invalid credentials');
       }
       // Crear el token JWT
-      const token = jwt.sign({ id: user.id, mail: user.mail }, 'your_jwt_secret', { expiresIn: '1h' });
+      const token = jwt.sign({ id: user.id, RoleId: user.RoleId }, process.env.SECRET, { expiresIn: '1h' });
       return { token };
     } catch (error) {
       console.error("Error logging in:", error);
+      throw error;
+    }
+  };
+
+  getUserByToken = async (token) => {
+    try {
+      const decoded = jwt.verify(token, process.env.SECRET);
+      const user = await User.findByPk(decoded.id, {
+        attributes: ['id', 'RoleId']
+      });
+      if (!user) {
+        throw new Error('User not found');
+      }
+      return user;
+    } catch (error) {
+      console.error("Error fetching user by token:", error);
       throw error;
     }
   };
@@ -53,7 +68,6 @@ class UserService {
 
   createUser = async (userData) => {
     const { name, lastname, mail, dni, pass, dateOfBirth, address, city, state, RoleId } = userData;
-    const hashedPassword = await bcrypt.hash(pass, 10); // Hashear la contraseña
     const transaction = await sequelize.transaction();
     try {
       // Crear el usuario
@@ -62,7 +76,7 @@ class UserService {
         lastname,
         mail,
         dni,
-        pass: hashedPassword, // Almacenar la contraseña en texto plano
+        pass, // La contraseña será hasheada por el hook beforeCreate
         dateOfBirth,
         address,
         city,
@@ -85,7 +99,6 @@ class UserService {
       throw error;
     }
   };
-
   updateUser = async (id, userData) => {
     try {
       const user = await User.findByPk(id);
@@ -94,7 +107,8 @@ class UserService {
       }
       // Verificar si la contraseña está presente en los datos de actualización
       if (userData.pass) {
-        userData.pass = await bcrypt.hash(userData.pass, 10); // Hashear la nueva contraseña
+        const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS);
+        userData.pass = await bcrypt.hash(userData.pass, saltRounds); // Hashear la nueva contraseña
       }
       await user.update(userData);
       return user;

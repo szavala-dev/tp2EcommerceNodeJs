@@ -1,7 +1,13 @@
 import { DataTypes, Model } from "sequelize";
 import connection from "../connection/connection.js";
+import bcrypt from 'bcrypt';
+import dotenv from 'dotenv';
 
-class User extends Model { }
+// Cargar las variables de entorno desde el archivo .env
+dotenv.config();
+
+
+class User extends Model {}
 
 User.init(
   {
@@ -17,12 +23,13 @@ User.init(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-
     mail: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
-      isEmail: true,
+      validate: {
+        isEmail: true,
+      },
     },
     pass: {
       type: DataTypes.STRING,
@@ -52,6 +59,15 @@ User.init(
   {
     sequelize: connection,
     modelName: "User",
+    hooks: {
+      beforeCreate: async (user) => {
+        if (user.pass) {
+          const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS);
+          const hashedPassword = await bcrypt.hash(user.pass, saltRounds);
+          user.pass = hashedPassword;
+        }
+      },
+    },
   }
 );
 
