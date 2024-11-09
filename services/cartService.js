@@ -20,6 +20,9 @@ class CartService {
         where: { UserId: userId },
         include: [{ model: CartItem, include: [Product] }],
       });
+      if (!cart) {
+        throw new Error('Cart not found');
+      }
       return cart;
     } catch (error) {
       console.error("Error fetching cart:", error);

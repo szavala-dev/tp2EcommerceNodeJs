@@ -1,8 +1,21 @@
 import UserService from '../services/UserService.js';
 import jwt from 'jsonwebtoken';
+import RoleService from '../services/RoleService.js';
+
 
 class UserControllers {
   userService = new UserService();
+  roleService = new RoleService();
+
+  checkAdmin = async (req, res) => {
+    try {
+      const { RoleId } = req.body;
+      const isAdmin = await this.roleService.isAdmin(RoleId);
+      res.status(200).send({ success: true, isAdmin });
+    } catch (error) {
+      res.status(500).send({ success: false, message: error.message });
+    }
+  };
 
   login = async (req, res) => {
     try {
@@ -23,11 +36,7 @@ class UserControllers {
       if (!token) {
         return res.status(400).send({ success: false, message: 'Token is required' });
       }
-      const decoded = jwt.verify(token, 'your_jwt_secret');
-      const user = await this.userService.getUserById(decoded.id);
-      if (!user) {
-        return res.status(404).send({ success: false, message: 'User not found' });
-      }
+      const user = await this.userService.getUserByToken(token);
       res.status(200).send({ success: true, user });
     } catch (error) {
       res.status(401).send({ success: false, message: error.message });
@@ -74,12 +83,9 @@ class UserControllers {
   updateUser = async (req, res) => {
     try {
       const user = await this.userService.updateUser(req.params.id, req.body);
-      res.status(200).send(user);
+      res.status(200).send({ success: true, message: user });
     } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      res.status(500).send({ success: false, message: error.message });
     }
   };
 

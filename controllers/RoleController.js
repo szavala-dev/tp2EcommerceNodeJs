@@ -1,4 +1,4 @@
-import RoleService from "../services/roleService.js";
+import RoleService from "../services/RoleService.js";
 
 class RoleController {
   roleService = new RoleService();

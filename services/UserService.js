@@ -5,6 +5,8 @@ import sequelize from "../connection/connection.js";
 
 class UserService {
 
+  
+
   login = async (mail, pass) => {
     try {
       const user = await User.findOne({ where: { mail } });
@@ -29,17 +31,18 @@ class UserService {
     try {
       const decoded = jwt.verify(token, process.env.SECRET);
       const user = await User.findByPk(decoded.id, {
-        attributes: ['id', 'RoleId']
+        attributes: ['id', 'name', 'RoleId']
       });
       if (!user) {
         throw new Error('User not found');
       }
-      return user;
+      return { id: user.id, name: user.name, RoleId: user.RoleId };
     } catch (error) {
       console.error("Error fetching user by token:", error);
       throw error;
     }
   };
+
 
   getAllUsers = async () => {
     try {
@@ -99,6 +102,7 @@ class UserService {
       throw error;
     }
   };
+
   updateUser = async (id, userData) => {
     try {
       const user = await User.findByPk(id);
