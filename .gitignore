@@ -6,4 +6,5 @@ error.log
 combined.log
 exceptions.log
 
+# Archivos de entorno
 .env
