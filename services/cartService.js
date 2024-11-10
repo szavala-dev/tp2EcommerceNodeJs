@@ -2,7 +2,7 @@ import { Cart, CartItem, Product, Order } from "../models/index.js";
 import sequelize from "../connection/connection.js"; // Importar la instancia de Sequelize
 
 class CartService {
-  // Crear un nuevo carrito
+
   async createCart(userId, deliveryAddress, email, city, state) {
     try {
       const cart = await Cart.create({ UserId: userId, delivery_address: deliveryAddress, email, city, state });
@@ -13,7 +13,6 @@ class CartService {
     }
   }
 
-  // Obtener el carrito de un usuario
   async getCartByUserId(userId) {
     try {
       const cart = await Cart.findOne({
@@ -30,13 +29,17 @@ class CartService {
     }
   }
 
-  // Agregar un producto al carrito
   async addProductToCart(cartId, productId, quantity) {
     const transaction = await sequelize.transaction();
     try {
       const product = await Product.findByPk(productId);
       if (!product) {
         throw new Error("Product not found");
+      }
+
+      // Verificar si hay suficiente stock
+      if (product.stock < quantity) {
+        throw new Error("Not enough stock available");
       }
 
       const cartItem = await CartItem.findOne({ where: { CartId: cartId, ProductId: productId } });
@@ -59,7 +62,6 @@ class CartService {
       throw error;
     }
   }
-
   // Eliminar un producto del carrito
   async removeProductFromCart(cartId, productId) {
     try {
