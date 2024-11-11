@@ -7,6 +7,19 @@ class ProductService {
   async createProduct(productData) {
     const transaction = await sequelize.transaction(); // Iniciar transacción
     try {
+      // Verificar que todos los atributos requeridos no sean nulos
+      const requiredAttributes = ['name', 'description', 'price', 'brand', 'stock', 'category'];
+      for (const attribute of requiredAttributes) {
+        if (productData[attribute] == null) {
+          throw new Error(`Attribute ${attribute} cannot be null`);
+        }
+      }
+  
+      // Verificar que el stock no sea negativo
+      if (productData.stock < 0) {
+        throw new Error("Stock cannot be negative");
+      }
+  
       const product = await Product.create(productData, { transaction });
       await transaction.commit(); // Confirmar la transacción si todo sale bien
       return product;

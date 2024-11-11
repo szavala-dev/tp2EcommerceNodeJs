@@ -76,7 +76,6 @@ class CartService {
     }
   }
 
-  // Generar una orden desde el carrito
   async generateOrder(userId) {
     const transaction = await sequelize.transaction();
     try {
@@ -84,7 +83,7 @@ class CartService {
       if (!cart) {
         throw new Error("Cart not found");
       }
-
+  
       const orderData = {
         UserId: userId,
         products: JSON.stringify(cart.CartItems.map(item => ({
@@ -101,9 +100,19 @@ class CartService {
         createdAt: new Date(),
         updatedAt: new Date()
       };
-
+  
       const order = await Order.create(orderData, { transaction });
-
+  
+      // Verificar si hay suficiente stock para todos los productos
+      for (const item of cart.CartItems) {
+        const product = await Product.findByPk(item.ProductId, { transaction });
+        if (product) {
+          if (product.stock < item.quantity) {
+            throw new Error(`Not enough stock for product ${product.name}`);
+          }
+        }
+      }
+  
       // Reducir el stock de los productos
       for (const item of cart.CartItems) {
         const product = await Product.findByPk(item.ProductId, { transaction });
@@ -112,10 +121,9 @@ class CartService {
           await product.save({ transaction });
         }
       }
-
+  
       // Eliminar los ítems del carrito
       await CartItem.destroy({ where: { CartId: cart.id }, transaction });
-
       await transaction.commit();
       return order;
     } catch (error) {
