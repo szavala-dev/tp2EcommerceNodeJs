@@ -58,6 +58,13 @@ class OrderService {
       if (!order) {
         throw new Error("Order not found");
       }
+  
+      for (const key in orderData) {
+        if (orderData[key] == null || orderData[key] === '') {
+          throw new Error(`Attribute ${key} cannot be null or empty`);
+        }
+      }
+  
       await order.update(orderData);
       return order;
     } catch (error) {

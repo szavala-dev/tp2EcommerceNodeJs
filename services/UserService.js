@@ -103,24 +103,37 @@ class UserService {
     }
   };
 
-  updateUser = async (id, userData) => {
-    try {
-      const user = await User.findByPk(id);
-      if (!user) {
-        throw new Error("User not found");
-      }
-      // Verificar si la contraseña está presente en los datos de actualización
-      if (userData.pass) {
-        const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS);
-        userData.pass = await bcrypt.hash(userData.pass, saltRounds); // Hashear la nueva contraseña
-      }
-      await user.update(userData);
-      return user;
-    } catch (error) {
-      console.error("Error updating user:", error);
-      throw error;
+  // Update a user by ID
+updateUser = async (id, userData) => {
+  const transaction = await sequelize.transaction(); // Iniciar transacción
+  try {
+    const user = await User.findByPk(id);
+    if (!user) {
+      throw new Error("User not found");
     }
-  };
+
+    // Verificar que ningún atributo se actualice a nulo o vacío
+    for (const key in userData) {
+      if (userData[key] == null || userData[key] === '') {
+        throw new Error(`Attribute ${key} cannot be null or empty`);
+      }
+    }
+
+    // Verificar si la contraseña está presente en los datos de actualización
+    if (userData.pass) {
+      const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS);
+      userData.pass = await bcrypt.hash(userData.pass, saltRounds); // Hashear la nueva contraseña
+    }
+
+    await user.update(userData, { transaction });
+    await transaction.commit(); // Confirmar la transacción si todo sale bien
+    return user;
+  } catch (error) {
+    await transaction.rollback(); // Revertir la transacción si ocurre un error
+    console.error("Error updating user:", error);
+    throw error;
+  }
+};
 
   deleteUser = async (id) => {
     try {

@@ -52,12 +52,20 @@ class RoleService {
   }
 
   // Actualizar un rol por ID
-  async updateRoleService(id, roleData) {
+  async updateRoleService(roleId, roleData) {
     try {
-      const role = await Role.findByPk(id);
-      if (!role) {
-        throw new Error("Role not found");
+      // Verificar que los campos no estén vacíos
+      for (const key in roleData) {
+        if (roleData[key] === '') {
+          throw new Error(`Attribute ${key} cannot be empty`);
+        }
       }
+
+      const role = await Role.findByPk(roleId);
+      if (!role) {
+        throw new Error('Role not found');
+      }
+
       await role.update(roleData);
       return role;
     } catch (error) {
@@ -65,7 +73,6 @@ class RoleService {
       throw error;
     }
   }
-
   // Eliminar un rol por ID
   async deleteRoleService(id) {
     try {
