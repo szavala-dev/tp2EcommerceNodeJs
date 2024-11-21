@@ -1,4 +1,4 @@
-import UserService from '../services/UserService.js';
+import UserService from '../services/userService.js';
 import jwt from 'jsonwebtoken';
 import RoleService from '../services/RoleService.js';
 

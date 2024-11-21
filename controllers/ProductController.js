@@ -11,10 +11,7 @@ class ProductController {
       const product = await this.productService.createProduct(req.body);
       res.status(200).send({ success: true, message: product });
     } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).send({ success: false, message: error.message});
     }
   };
 
@@ -24,10 +21,7 @@ class ProductController {
       const products = await this.productService.getAllProducts();
       res.status(200).send({ success: true, message: products });
     } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).send({ success: false, message: error.message });
     }
   };
 
@@ -37,10 +31,7 @@ class ProductController {
       const product = await this.productService.getProductById(req.params.id);
       res.status(200).send({ success: true, message: product });
     } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).send({ success: false,message: error.message });
     }
   };
 
@@ -50,10 +41,7 @@ class ProductController {
       const product = await this.productService.updateProduct(req.params.id, req.body);
       res.status(200).send({ success: true, message: product });
     } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).send({ success: false, message: error.message });
     }
   };
 
@@ -63,10 +51,7 @@ class ProductController {
       const product = await this.productService.deleteProduct(req.params.id);
       res.status(200).send({ success: true, message: product });
     } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).send({ success: false, message: error.message });
     }
   };
 
@@ -87,10 +72,7 @@ class ProductController {
       const product = await this.productService.getLeastSellingProduct();
       res.status(200).send({ success: true, message: product });
     } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).send({ success: false, message: error.message });
     }
   };
 

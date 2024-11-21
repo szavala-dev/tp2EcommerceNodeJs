@@ -61,10 +61,7 @@ class RoleController {
       const role = await this.roleService.deleteRoleService(req.params.id);
       res.status(200).send({ success: true, message: role });
     } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).send({ success: false, message: error.message,});
     }
   };
 }

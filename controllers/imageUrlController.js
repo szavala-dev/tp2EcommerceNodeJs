@@ -9,10 +9,7 @@ class ImageUrlController {
       const imageUrl = await this.imageUrlService.createImageUrl(req.body);
       res.status(200).send({ success: true, message: imageUrl });
     } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).send({ success: false, message: error.message });
     }
   };
 
@@ -22,10 +19,7 @@ class ImageUrlController {
       const imageUrls = await this.imageUrlService.getAllImageUrls();
       res.status(200).send({ success: true, message: imageUrls });
     } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).send({success: false, message: error.message });
     }
   };
 
@@ -35,10 +29,7 @@ class ImageUrlController {
       const imageUrl = await this.imageUrlService.getImageUrlById(req.params.id);
       res.status(200).send({ success: true, message: imageUrl });
     } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).send({ success: false, message: error.message });
     }
   };
 
@@ -48,10 +39,7 @@ class ImageUrlController {
       const imageUrl = await this.imageUrlService.updateImageUrl(req.params.id, req.body);
       res.status(200).send({ success: true, message: imageUrl });
     } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).send({ success: false, message: error.message });
     }
   };
 
@@ -61,10 +49,7 @@ class ImageUrlController {
       const imageUrl = await this.imageUrlService.deleteImageUrl(req.params.id);
       res.status(200).send({ success: true, message: imageUrl });
     } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).send({ success: false, message: error.message });
     }
   };
 }

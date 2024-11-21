@@ -10,10 +10,7 @@ class CartController {
       const cart = await this.cartService.createCart(userId, deliveryAddress, email, city, state);
       res.status(200).send({ success: true, message: cart });
     } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).send({ success: false, message: error.message });
     }
   };
 
@@ -23,10 +20,7 @@ class CartController {
       const cart = await this.cartService.getCartByUserId(req.params.userId);
       res.status(200).send({ success: true, message: cart });
     } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).send({ success: false, message: error.message });
     }
   };
 
@@ -37,10 +31,7 @@ class CartController {
       const cart = await this.cartService.addProductToCart(cartId, productId, quantity);
       res.status(200).send({ success: true, message: cart });
     } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).send({ success: false, message: error.message});
     }
   };
 
@@ -51,10 +42,7 @@ class CartController {
       const cart = await this.cartService.removeProductFromCart(cartId, productId);
       res.status(200).send({ success: true, message: cart });
     } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).send({ success: false, message: error.message});
     }
   };
 
@@ -63,10 +51,7 @@ class CartController {
       const order = await this.cartService.generateOrder(req.params.userId);
       res.status(200).send({ success: true, message: order });
     } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).send({ success: false, message: error.message });
     }
   };
 }

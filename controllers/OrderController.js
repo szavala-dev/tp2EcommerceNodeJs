@@ -9,10 +9,7 @@ class OrderController {
       const order = await this.orderService.createOrder(req.body);
       res.status(200).send({ success: true, message: order });
     } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).send({ success: false, message: error.message });
     }
   };
 
@@ -22,10 +19,7 @@ class OrderController {
       const orders = await this.orderService.getAllOrders();
       res.status(200).send({ success: true, message: orders });
     } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).send({ success: false, message: error.message });
     }
   };
 
@@ -35,10 +29,7 @@ class OrderController {
       const orders = await this.orderService.getOrdersByUserId(req.params.id);
       res.status(200).send({ success: true, orders });
     } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).send({ success: false, message: error.message });
     }
   };
 
@@ -48,10 +39,7 @@ class OrderController {
       const order = await this.orderService.getOrderById(req.params.id);
       res.status(200).send({ success: true, message: order });
     } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).send({ success: false, message: error.message });
     }
   };
 
@@ -61,10 +49,7 @@ class OrderController {
       const order = await this.orderService.updateOrder(req.params.id, req.body);
       res.status(200).send({ success: true, message: order });
     } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).send({ success: false, message: error.message });
     }
   };
 
@@ -74,10 +59,7 @@ class OrderController {
       const order = await this.orderService.deleteOrder(req.params.id);
       res.status(200).send({ success: true, message: order });
     } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).send({ success: false, message: error.message  });
     }
   };
 
@@ -87,10 +69,7 @@ class OrderController {
       const order = await this.orderService.confirmOrder(req.params.id);
       res.status(200).send({ success: true, message: order });
     } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).send({ success: false, message: error.message });
     }
   };
 
@@ -100,10 +79,7 @@ class OrderController {
       const order = await this.orderService.prepareOrder(req.params.id);
       res.status(200).send({ success: true, message: order });
     } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).send({ success: false, message: error.message });
     }
   };
 
@@ -113,10 +89,7 @@ class OrderController {
       const order = await this.orderService.sendOrder(req.params.id);
       res.status(200).send({ success: true, message: order });
     } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).send({ success: false, message: error.message });
     }
   };
 
@@ -126,10 +99,7 @@ class OrderController {
       const order = await this.orderService.cancelOrder(req.params.id);
       res.status(200).send({ success: true, message: order });
     } catch (error) {
-      res.status(400).send({
-        success: false,
-        message: error.message,
-      });
+      res.status(400).send({ success: false, message: error.message });
     }
   };
 
