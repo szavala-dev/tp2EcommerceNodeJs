@@ -27,7 +27,7 @@ const logger = createLogger({
 });
 
 // En producción, desactivar el registro detallado en consola
-if (process.env.NODE_ENV) {
+if (process.env.NODE_ENV === 'production') {
   logger.transports.forEach((t) => {
     if (t instanceof transports.Console) {
       t.silent = true;

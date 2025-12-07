@@ -2,10 +2,10 @@
   "name": "e-commerce",
   "version": "1.0.0",
   "description": "Aplicación de e-commerce para TP final",
-  "main": "app.js",
+  "main": "api.js",
   "type": "module",
   "scripts": {
-    "start": "node app.js",
+    "start": "node api.js",
     "dev": "node --watch api.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

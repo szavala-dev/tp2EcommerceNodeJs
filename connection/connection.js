@@ -11,7 +11,13 @@ const connection = new Sequelize(
   {
   host: process.env.DB_HOST,
   dialect: process.env.DB_DIALECT,
-  port: process.env.DB_PORT, // Puerto predeterminado para SQL Server
+  port: parseInt(process.env.DB_PORT) || 1433, // Puerto predeterminado para SQL Server
+  dialectOptions: {
+    options: {
+      encrypt: process.env.ENCRYPT === 'true' || false,
+      trustServerCertificate: true
+    }
+  }
 });
 
 (async () => {

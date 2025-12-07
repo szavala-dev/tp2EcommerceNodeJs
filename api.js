@@ -1,9 +1,13 @@
 import express from 'express';
 import cors from 'cors';
+import dotenv from 'dotenv';
 import routes from './routes/routes.js';
 import connection from './connection/connection.js';
 import logger from './middlewares/logger.js';
 import cookieParser from 'cookie-parser'; // Importar cookie-parser
+
+// Cargar variables de entorno
+dotenv.config();
 
 const app = express();
 
@@ -46,10 +50,15 @@ app.use((err, req, res, next) => {
 // Sincronizar los modelos con la base de datos
 await connection.sync({ force: false });
 
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3000;
+
+if (!process.env.PORT) {
+  logger.warn(`PORT no configurado, usando puerto por defecto: ${PORT}`);
+}
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
+  logger.info(`Servidor iniciado en el puerto ${PORT}`);
 });
 
 export default app;
