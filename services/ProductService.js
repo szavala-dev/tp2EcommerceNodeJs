@@ -1,6 +1,8 @@
-import { Product } from "../models/index.js";
+import { Op } from "sequelize";
+import { Product, Order } from "../models/index.js";
 import logger from "../middlewares/logger.js";
 import sequelize from "../connection/connection.js";
+import { aggregateProductSales } from "../utils/salesAggregator.js";
 
 class ProductService {
   // Create a new product
@@ -112,53 +114,47 @@ async deleteProduct(id) {
     throw new Error("Failed to delete product");
   }
 }
+  async getProductBySales(ordering = 'desc') {
+    const orders = await Order.findAll({
+      where: { status: { [Op.ne]: 'Cancelado' } },
+      attributes: ['products', 'id']
+    });
+
+    const salesMap = aggregateProductSales(orders);
+    if (salesMap.size === 0) {
+      throw new Error("No products found");
+    }
+
+    const sortedEntries = [...salesMap.entries()].sort((a, b) =>
+      ordering === 'asc' ? a[1] - b[1] : b[1] - a[1]
+    );
+
+    const [productId, totalQuantity] = sortedEntries[0];
+    const product = await Product.findByPk(productId);
+    if (!product) {
+      throw new Error("Product not found");
+    }
+
+    return { product, totalQuantity };
+  }
+
   //  Obtener el producto más vendido
   async getBestSellingProduct() {
     try {
-      const bestSellingProduct = await Order.findAll({
-        attributes: [
-          'products',
-          [sequelize.fn('SUM', sequelize.col('quantity')), 'totalQuantity']
-        ],
-        group: ['ProductId'],
-        order: [[sequelize.fn('SUM', sequelize.col('quantity')), 'DESC']],
-        limit: 1,
-        include: [{ model: Product, attributes: ['id', 'name', 'price', 'stock'] }]
-      });
-
-      if (bestSellingProduct.length === 0) {
-        throw new Error("No products found");
-      }
-
-      return bestSellingProduct[0];
+      return await this.getProductBySales('desc');
     } catch (error) {
-      console.error("Error fetching best selling product:", error);
-      throw error;
+      logger.error(`Failed to fetch best selling product: ${error.message}`);
+      throw new Error("Failed to fetch best selling product");
     }
   }
 
-    // Obtener el producto menos vendido
+  // Obtener el producto menos vendido
   async getLeastSellingProduct() {
     try {
-      const leastSellingProduct = await Order.findAll({
-        attributes: [
-          'products',
-          [sequelize.fn('SUM', sequelize.col('quantity')), 'totalQuantity']
-        ],
-        group: ['ProductId'],
-        order: [[sequelize.fn('SUM', sequelize.col('quantity')), 'ASC']],
-        limit: 1,
-        include: [{ model: Product, attributes: ['id', 'name', 'price', 'stock'] }]
-      });
-
-      if (leastSellingProduct.length === 0) {
-        throw new Error("No products found");
-      }
-
-      return leastSellingProduct[0];
+      return await this.getProductBySales('asc');
     } catch (error) {
-      console.error("Error fetching least selling product:", error);
-      throw error;
+      logger.error(`Failed to fetch least selling product: ${error.message}`);
+      throw new Error("Failed to fetch least selling product");
     }
   }
 

@@ -1,4 +1,5 @@
 import CartService from "../services/cartService.js";
+import { validateRequiredFields } from "../utils/validators.js";
 
 class CartController {
   cartService = new CartService();
@@ -7,6 +8,10 @@ class CartController {
   createCart = async (req, res) => {
     try {
       const { userId, deliveryAddress, email, city, state } = req.body;
+      const { valid, missing } = validateRequiredFields(req.body, ['userId', 'deliveryAddress', 'email', 'city', 'state']);
+      if (!valid) {
+        return res.status(400).send({ success: false, message: `Missing fields: ${missing.join(', ')}` });
+      }
       const cart = await this.cartService.createCart(userId, deliveryAddress, email, city, state);
       res.status(200).send({ success: true, message: cart });
     } catch (error) {
@@ -17,7 +22,11 @@ class CartController {
   // Obtener el carrito de un usuario
   getCartByUserId = async (req, res) => {
     try {
-      const cart = await this.cartService.getCartByUserId(req.params.userId);
+      const { userId } = req.params;
+      if (!userId) {
+        return res.status(400).send({ success: false, message: 'userId is required' });
+      }
+      const cart = await this.cartService.getCartByUserId(userId);
       res.status(200).send({ success: true, message: cart });
     } catch (error) {
       res.status(400).send({ success: false, message: error.message });
@@ -27,8 +36,12 @@ class CartController {
   // Agregar un producto al carrito
   addProductToCart = async (req, res) => {
     try {
-      const { cartId, productId, quantity } = req.body;
-      const cart = await this.cartService.addProductToCart(cartId, productId, quantity);
+      const { userId, productId, quantity } = req.body;
+      const { valid, missing } = validateRequiredFields(req.body, ['userId', 'productId', 'quantity']);
+      if (!valid) {
+        return res.status(400).send({ success: false, message: `Missing fields: ${missing.join(', ')}` });
+      }
+      const cart = await this.cartService.addProductToCart(userId, productId, quantity);
       res.status(200).send({ success: true, message: cart });
     } catch (error) {
       res.status(400).send({ success: false, message: error.message});
@@ -38,8 +51,12 @@ class CartController {
   // Eliminar un producto del carrito
   removeProductFromCart = async (req, res) => {
     try {
-      const { cartId, productId } = req.body;
-      const cart = await this.cartService.removeProductFromCart(cartId, productId);
+      const { userId, productId } = req.body;
+      const { valid, missing } = validateRequiredFields(req.body, ['userId', 'productId']);
+      if (!valid) {
+        return res.status(400).send({ success: false, message: `Missing fields: ${missing.join(', ')}` });
+      }
+      const cart = await this.cartService.removeProductFromCart(userId, productId);
       res.status(200).send({ success: true, message: cart });
     } catch (error) {
       res.status(400).send({ success: false, message: error.message});
@@ -48,7 +65,11 @@ class CartController {
 
   generateOrder = async (req, res) => {
     try {
-      const order = await this.cartService.generateOrder(req.params.userId);
+      const { userId } = req.params;
+      if (!userId) {
+        return res.status(400).send({ success: false, message: 'userId is required' });
+      }
+      const order = await this.cartService.generateOrder(userId);
       res.status(200).send({ success: true, message: order });
     } catch (error) {
       res.status(400).send({ success: false, message: error.message });

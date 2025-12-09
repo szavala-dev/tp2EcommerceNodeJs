@@ -5,6 +5,7 @@ node_modules/
 error.log
 combined.log
 exceptions.log
+out.log
 
 # Archivos de entorno
 .env

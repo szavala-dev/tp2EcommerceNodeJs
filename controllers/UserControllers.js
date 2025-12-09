@@ -1,6 +1,6 @@
-import UserService from '../services/userService.js';
-import jwt from 'jsonwebtoken';
+import UserService from '../services/UserService.js';
 import RoleService from '../services/RoleService.js';
+import { validateRequiredFields } from '../utils/validators.js';
 
 
 class UserControllers {
@@ -69,6 +69,11 @@ class UserControllers {
 
   createUser = async (req, res) => {
     try {
+      const required = ['name', 'lastname', 'mail', 'dni', 'pass'];
+      const { valid, missing } = validateRequiredFields(req.body, required);
+      if (!valid) {
+        return res.status(400).send({ success: false, message: `Missing fields: ${missing.join(', ')}` });
+      }
       const user = await this.userService.createUser(req.body);
       res.status(200).send({ success: true, user });
     } catch (error) {

@@ -5,6 +5,7 @@ import Order from './Order.js';
 import ImageUrl from "./ImageUrl.js";
 import Cart from "./Cart.js";
 import CartItem from "./CartItem.js";
+import NewsletterSubscription from './NewsletterSubscription.js';
 
 // Relación de uno a muchos entre Role y User
 Role.hasMany(User, { onDelete: 'CASCADE', onUpdate: 'CASCADE' });
@@ -29,4 +30,4 @@ CartItem.belongsTo(Product, { foreignKey: 'ProductId', onDelete: 'CASCADE', onUp
 Product.hasMany(ImageUrl, { onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 ImageUrl.belongsTo(Product, { onDelete: 'CASCADE', onUpdate: 'CASCADE' });
 
-export { Role, User, Product, Order, ImageUrl, Cart, CartItem };
+export { Role, User, Product, Order, ImageUrl, Cart, CartItem, NewsletterSubscription };

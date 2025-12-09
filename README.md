@@ -17,7 +17,7 @@ Asegúrate de tener los siguientes componentes instalados en tu sistema:
 •	SQL Server de Microsoft
 Instalación
 1.	Clona este repositorio:
-git clone https://github.com/RoloMessina/TP2_Final_E_Commerce.git
+git clone https://github.com/szavala-dev/tp2EcommerceNodeJs.git
 cd TP2_Final_E_Commerce
 2.	Instala las dependencias:
 npm install
@@ -38,44 +38,74 @@ PORT= (A elegir)
 NODE_ENV= production 
 DURACION_COOKIE = int 
 ADMIN_ROLE_ID = adminid
+UPLOAD_MAX_SIZE=5242880
+Si omites `UPLOAD_MAX_SIZE`, la API usa 5 MB como límite por archivo.
 4.	Inicializa la Base de Datos:
 o	Configura la base de datos SQL Server según las credenciales de .env.
+5.	Carga datos base (opcional pero recomendado):
+o	Ejecuta `npm run seed` para crear los roles iniciales (`admin`, `user`) y un usuario administrador por defecto (`admin@example.com`).
+o	Puedes editar `seed.js` para ajustar los datos o agregar más entidades antes de correr el comando.
+6.	Tests automatizados:
+o	Ejecuta `npm test` para correr las suites unitarias (Jest + Supertest/uitles) que validan helpers clave.
 Uso
 1.	Inicia el servidor:
 npm run dev
-El servidor debería estar disponible en http://localhost:8001.
-2.	Rutas del API:
-La API expone los siguientes endpoints. A continuación, se muestra un ejemplo de cada entidad disponible:
-o	Usuarios
-	GET /api/users: Obtiene una lista de todos los usuarios.
-	POST /api/users: Crea un nuevo usuario.
-	GET /api/users/:id: Obtiene un usuario específico por ID.
-	PUT /api/users/:id: Actualiza un usuario específico.
-	DELETE /api/users/:id: Elimina un usuario específico.
-o	Productos
-	GET /api/products: Lista todos los productos.
-	POST /api/products: Crea un nuevo producto.
-	GET /api/products/:id: Obtiene un producto específico por ID.
-	PUT /api/products/:id: Actualiza un producto específico.
-	DELETE /api/products/:id: Elimina un producto específico.
-o	Pedidos
-	GET /api/orders: Lista todos los pedidos.
-	POST /api/orders: Crea un nuevo pedido.
-	GET /api/orders/:id: Obtiene un pedido específico.
-	PUT /api/orders/:id: Actualiza un pedido específico.
-	DELETE /api/orders/:id: Elimina un pedido específico.
-o	Roles
-	GET /api/roles: Lista todos los roles de usuario.
-	POST /api/roles: Crea un nuevo rol.
-	GET /api/roles/:id: Obtiene un rol específico.
-	PUT /api/roles/:id: Actualiza un rol específico.
-	DELETE /api/roles/:id: Elimina un rol específico.
-o	Carrito de Compras
-	GET /api/cart: Lista todos los carritos de compra.
-	POST /api/cart: Crea un nuevo carrito de compra.
-	GET /api/cart/:id: Obtiene un carrito específico.
-	PUT /api/cart/:id: Actualiza un carrito específico.
-	DELETE /api/cart/:id: Elimina un carrito específico.
+El servidor queda disponible en http://localhost:3000. La ruta raíz `/` devuelve una respuesta de salud y todas las rutas funcionales viven bajo el prefijo `/app`.
+2.	Rutas del API (Base URL: http://localhost:3000/app)
+
+Autenticación
+•	POST /users/login → inicia sesión y devuelve JWT (1h).  
+•	GET /users/loginToken → requiere `Authorization: Bearer <token>` y devuelve el usuario autenticado.  
+•	POST /users/check-admin → recibe `{ RoleId }` y responde si es admin.  
+•	GET /users/best-customer → mejor cliente por monto gastado.
+
+Usuarios (públicos)
+•	GET /users → lista usuarios.  
+•	GET /users/:id → detalle por ID.  
+•	POST /users → crea usuario (hash automático + carrito inicial).  
+•	PUT /users/:id, DELETE /users/:id → actualiza/elimina usuario.
+
+Roles (requiere token de admin)
+•	GET /roles, GET /roles/:id.  
+•	POST /roles → crea rol.  
+•	PUT /roles/:id, DELETE /roles/:id → administra roles existentes.
+
+Productos
+•	GET /products, GET /products/:id.  
+•	GET /products/best-selling y /products/least-selling → métricas de ventas.  
+•	POST /products, PUT /products/:id, DELETE /products/:id → requieren token de admin.
+
+Órdenes
+•	GET /orders → lista todas las órdenes.  
+•	GET /orders/:id → detalle.  
+•	GET /orders/user/:id → órdenes por usuario.  
+•	GET /orders/(pending|confirmed|prepared|sent|canceled) → filtros.  
+•	POST /orders → crea orden.  
+•	PUT /orders/:id, DELETE /orders/:id → requieren admin.  
+•	PUT /orders/:id/(confirm|prepare|send|cancel) → cambios de estado (solo admin).
+
+Carritos
+•	POST /carts → crea carrito para un usuario.  
+•	GET /carts/:userId → obtiene el carrito asociando al usuario.  
+•	POST /carts/add → body `{ userId, productId, quantity }`.  
+•	POST /carts/remove → body `{ userId, productId }`.  
+•	POST /carts/:userId/generate-order → genera una orden con validaciones de stock.
+
+Imágenes de producto
+•	GET /image-urls, GET /image-urls/:id.  
+•	POST /image-urls, PUT /image-urls/:id, DELETE /image-urls/:id.
+
+Uploads (solo admin)
+•	POST /uploads → recibe `multipart/form-data` con el campo `file`, persiste la imagen en `/uploads` y responde con la URL pública. Requiere header `Authorization` de un admin.
+•	Puedes consumir la imagen luego desde `http://localhost:3000/uploads/<nombre-de-archivo>`.
+
+Newsletter
+•	POST /newsletter/subscribe → recibe `{ "email": "persona@dominio.com" }` y guarda la suscripción. Si el email ya existe devuelve 400 con el mensaje correspondiente.
+
+Notas sobre autorización
+•	Los endpoints marcados como “solo admin” usan los middlewares `authenticate` + `requireAdmin`.  
+•	Incluye siempre el header `Authorization: Bearer <token>` cuando consumas endpoints protegidos.
+
 
 3.	Ejemplos de Solicitud:
 Ejemplo de solicitud para crear un nuevo usuario (POST):
@@ -95,6 +125,20 @@ POST /app/users
   "RoleId": 1
 }
 En esta solicitud, se envía un JSON con los datos necesarios para crear un usuario en la aplicación. Asegúrate de que el endpoint y el puerto sean correctos en tu servidor (http://localhost:8001/app/users) antes de enviar la solicitud.
+Ejemplo para subir una imagen (POST):
+```
+curl -X POST http://localhost:3000/app/uploads \
+  -H "Authorization: Bearer <token_admin>" \
+  -F "file=@/ruta/a/la-imagen.jpg"
+```
+La respuesta incluye el nombre con el que se guardó el archivo y la URL pública para consumirlo.
+Ejemplo para suscribirse al newsletter (POST):
+```
+POST /app/newsletter/subscribe
+{
+  "email": "persona@dominio.com"
+}
+```
 Manejo de Errores
 El servidor utiliza un middleware de manejo de errores para capturar y responder a las excepciones de manera estructurada. En caso de error, la API devuelve un mensaje JSON con el estado HTTP y detalles del error.
 Dependencias Utilizadas
@@ -108,6 +152,7 @@ Copiar código
   "cors": "^2.8.5",
   "dotenv": "^16.4.5",
   "express": "^4.21.0",
+  "multer": "^1.4.5-lts.1",
   "jsonwebtoken": "^9.0.2",
   "morgan": "^1.10.0",
   "sequelize": "^6.37.4",
@@ -115,7 +160,7 @@ Copiar código
   "winston": "^3.15.0"
 }
 Estructura del Proyecto
-•	app.js: Punto de entrada de la aplicación, donde se inicializan los middlewares y rutas.
+•	api.js: Punto de entrada de la aplicación, donde se inicializan los middlewares, autenticación básica y rutas.
 •	connection/connection.js: Configura la conexión a la base de datos utilizando Sequelize.
 •	controllers/: Contiene los controladores de cada entidad (usuarios, productos, pedidos, etc.).
 •	models/: Contiene los modelos de datos definidos en Sequelize.

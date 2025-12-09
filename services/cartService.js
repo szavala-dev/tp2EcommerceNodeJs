@@ -3,6 +3,20 @@ import sequelize from "../connection/connection.js"; // Importar la instancia de
 
 class CartService {
 
+  async fetchCartByUserId(userId, options = {}) {
+    const cart = await Cart.findOne({
+      where: { UserId: userId },
+      include: [{ model: CartItem, include: [Product] }],
+      ...options,
+    });
+
+    if (!cart) {
+      throw new Error('Cart not found');
+    }
+
+    return cart;
+  }
+
   async createCart(userId, deliveryAddress, email, city, state) {
     try {
       const cart = await Cart.create({ UserId: userId, delivery_address: deliveryAddress, email, city, state });
@@ -15,26 +29,25 @@ class CartService {
 
   async getCartByUserId(userId) {
     try {
-      const cart = await Cart.findOne({
-        where: { UserId: userId },
-        include: [{ model: CartItem, include: [Product] }],
-      });
-      if (!cart) {
-        throw new Error('Cart not found');
-      }
-      return cart;
+      return await this.fetchCartByUserId(userId);
     } catch (error) {
       console.error("Error fetching cart:", error);
       throw error;
     }
   }
 
-  async addProductToCart(cartId, productId, quantity) {
+  async addProductToCart(userId, productId, quantity) {
     const transaction = await sequelize.transaction();
     try {
+      const cart = await this.fetchCartByUserId(userId, { transaction });
+
       const product = await Product.findByPk(productId);
       if (!product) {
         throw new Error("Product not found");
+      }
+
+      if (!Number.isFinite(quantity) || quantity <= 0) {
+        throw new Error("Quantity must be greater than zero");
       }
 
       // Verificar si hay suficiente stock
@@ -42,20 +55,20 @@ class CartService {
         throw new Error("Not enough stock available");
       }
 
-      const cartItem = await CartItem.findOne({ where: { CartId: cartId, ProductId: productId } });
+      const cartItem = await CartItem.findOne({ where: { CartId: cart.id, ProductId: productId } });
       if (cartItem) {
         cartItem.quantity += quantity;
         await cartItem.save({ transaction });
       } else {
         await CartItem.create({
-          CartId: cartId,
+          CartId: cart.id,
           ProductId: productId,
           quantity,
         }, { transaction });
       }
 
       await transaction.commit();
-      return await this.getCartByUserId(cartId);
+      return await this.fetchCartByUserId(userId);
     } catch (error) {
       await transaction.rollback();
       console.error("Error adding product to cart:", error);
@@ -63,13 +76,14 @@ class CartService {
     }
   }
   // Eliminar un producto del carrito
-  async removeProductFromCart(cartId, productId) {
+  async removeProductFromCart(userId, productId) {
     try {
-      const cartItem = await CartItem.findOne({ where: { CartId: cartId, ProductId: productId } });
+      const cart = await this.fetchCartByUserId(userId);
+      const cartItem = await CartItem.findOne({ where: { CartId: cart.id, ProductId: productId } });
       if (cartItem) {
         await cartItem.destroy();
       }
-      return await this.getCartByUserId(cartId);
+      return await this.fetchCartByUserId(userId);
     } catch (error) {
       console.error("Error removing product from cart:", error);
       throw error;

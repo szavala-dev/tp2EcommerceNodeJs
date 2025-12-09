@@ -1,5 +1,6 @@
-import ProductService from "../services/productService.js";
-import UserService from "../services/userService.js";
+import ProductService from "../services/ProductService.js";
+import UserService from "../services/UserService.js";
+import { validateRequiredFields } from "../utils/validators.js";
 
 class ProductController {
   productService = new ProductService();
@@ -8,6 +9,11 @@ class ProductController {
   // Create a new product
   createProduct = async (req, res) => {
     try {
+      const required = ['name', 'description', 'price', 'brand', 'stock', 'category'];
+      const { valid, missing } = validateRequiredFields(req.body, required);
+      if (!valid) {
+        return res.status(400).send({ success: false, message: `Missing fields: ${missing.join(', ')}` });
+      }
       const product = await this.productService.createProduct(req.body);
       res.status(200).send({ success: true, message: product });
     } catch (error) {
@@ -38,6 +44,11 @@ class ProductController {
   // Update a product by ID
   updateProduct = async (req, res) => {
     try {
+      const required = ['name', 'description', 'price', 'brand', 'stock', 'category'];
+      const { valid, missing } = validateRequiredFields(req.body, required);
+      if (!valid) {
+        return res.status(400).send({ success: false, message: `Missing fields: ${missing.join(', ')}` });
+      }
       const product = await this.productService.updateProduct(req.params.id, req.body);
       res.status(200).send({ success: true, message: product });
     } catch (error) {

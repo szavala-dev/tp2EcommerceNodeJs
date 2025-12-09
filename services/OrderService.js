@@ -90,56 +90,35 @@ class OrderService {
 
   // Obtener órdenes pendientes
   async getPendingOrders() {
-    try {
-      const pendingOrders = await Order.findAll({
-        where: { status: 'PagoPendiente' }
-      });
-      const count = pendingOrders.length;
-      return { count, orders: pendingOrders };
-    } catch (error) {
-      console.error("Error fetching pending orders:", error);
-      throw error;
-    }
+    return this.getOrdersByStatus('PagoPendiente');
   }
 
   // Obtener órdenes confirmadas
   async getConfirmedOrders() {
-    try {
-      const confirmedOrders = await Order.findAll({
-        where: { status: 'Confirmado' }
-      });
-      const count = confirmedOrders.length;
-      return { count, orders: confirmedOrders };
-    } catch (error) {
-      console.error("Error fetching confirmed orders:", error);
-      throw error;
-    }
+    return this.getOrdersByStatus('Confirmado');
   }
 
   // Obtener órdenes preparadas
   async getPreparedOrders() {
-    try {
-      const confirmedOrders = await Order.findAll({
-        where: { status: 'Preparado' }
-      });
-      const count = confirmedOrders.length;
-      return { count, orders: confirmedOrders };
-    } catch (error) {
-      console.error("Error fetching confirmed orders:", error);
-      throw error;
-    }
+    return this.getOrdersByStatus('Preparado');
   }
 
   // Obtener órdenes enviadas
   async getSentOrders() {
+    return this.getOrdersByStatus('Enviado');
+  }
+
+  // Obtener órdenes canceladas
+  async getCanceledOrders() {
+    return this.getOrdersByStatus('Cancelado');
+  }
+
+  async getOrdersByStatus(status) {
     try {
-      const sentOrders = await Order.findAll({
-        where: { status: 'Enviado' }
-      });
-      const count = sentOrders.length;
-      return { count, orders: sentOrders };
+      const orders = await Order.findAll({ where: { status } });
+      return { count: orders.length, orders };
     } catch (error) {
-      console.error("Error fetching sent orders:", error);
+      console.error(`Error fetching orders with status ${status}:`, error);
       throw error;
     }
   }

@@ -129,6 +129,19 @@ class OrderController {
     }
   };
 
+  // Obtener órdenes preparadas
+  getPreparedOrders = async (req, res) => {
+    try {
+      const { count, orders } = await this.orderService.getPreparedOrders();
+      res.status(200).send({ success: true, count, orders });
+    } catch (error) {
+      res.status(400).send({
+        success: false,
+        message: error.message,
+      });
+    }
+  };
+
   // Obtener órdenes enviadas
   getSentOrders = async (req, res) => {
     try {
